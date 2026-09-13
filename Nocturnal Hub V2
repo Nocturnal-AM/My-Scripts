@@ -427,11 +427,11 @@ pingLabel.TextXAlignment = Enum.TextXAlignment.Left
 pingLabel.Parent = profile
 
 local fpsLabel = Instance.new("TextLabel")
-fpsLabel.Position = UDim2.fromOffset(130, 98)
-fpsLabel.Size = UDim2.new(1, -145, 0, 22)
+fpsLabel.Position = UDim2.fromOffset(130, 99)
+fpsLabel.Size = UDim2.new(1, -145, 0, 20)
 fpsLabel.BackgroundTransparency = 1
 fpsLabel.Text = "FPS: --"
-fpsLabel.TextColor3 = GREEN
+fpsLabel.TextColor3 = Color3.fromRGB(105, 108, 115)
 fpsLabel.TextSize = 11
 fpsLabel.Font = Enum.Font.GothamMedium
 fpsLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -455,182 +455,182 @@ statusPadding.Parent = status
 
 round(status, 11)
 
--- Ping
+--ping and fps updater
 
 task.spawn(function()
-	local frames = 0
-	local lastTime = os.clock()
+	local frameCount = 0
+	local lastUpdate = os.clock()
 
 	RunService.RenderStepped:Connect(function()
-		frames += 1
+		frameCount += 1
 	end)
 
 	while gui.Parent do
 		task.wait(1)
 
 		local now = os.clock()
-		local elapsed = now - lastTime
-		local fps = math.floor(frames / math.max(elapsed, 0.001))
+		local elapsed = now - lastUpdate
 
-		frames = 0
-		lastTime = now
+		local fps = math.round(frameCount / math.max(elapsed, 0.001))
 
-		fpsLabel.Text = "FPS: " .. tostring(fps)
+		frameCount = 0
+		lastUpdate = now
 
-		local ping = "--"
+		local ping = 0
 
 		pcall(function()
-			local stats = game:GetService("Stats")
-			local network = stats:FindFirstChild("Network")
-
-			if network then
-				local serverStats = network:FindFirstChild("ServerStatsItem")
-
-				if serverStats then
-					local dataPing = serverStats:FindFirstChild("Data Ping")
-
-					if dataPing then
-						local value = dataPing:GetValue()
-
-						if typeof(value) == "number" then
-							ping = math.floor(value)
-						end
-					end
-				end
-			end
+			ping = math.round(player:GetNetworkPing() * 1000)
 		end)
 
-		pingLabel.Text = "Ping: " .. tostring(ping) .. " ms"
+		fpsLabel.Text = "FPS: " .. fps
+		pingLabel.Text = "Ping: " .. ping .. " ms"
+
+		-- FPS color
+		if fps >= 60 then
+			fpsLabel.TextColor3 = Color3.fromRGB(105, 108, 115)
+		elseif fps >= 30 then
+			fpsLabel.TextColor3 = Color3.fromRGB(180, 180, 135)
+		else
+			fpsLabel.TextColor3 = Color3.fromRGB(205, 105, 105)
+		end
+
+		-- Ping color
+		if ping <= 80 then
+			pingLabel.TextColor3 = Color3.fromRGB(105, 108, 115)
+		elseif ping <= 150 then
+			pingLabel.TextColor3 = Color3.fromRGB(180, 180, 135)
+		else
+			pingLabel.TextColor3 = Color3.fromRGB(205, 105, 105)
+		end
 	end
 end)
+
 
 
 -- Helpers
 
 local function createHubButton(parent, text, callback)
 	local button = Instance.new("TextButton")
-	button.Size = UDim2.new(1, -10, 0, 48)
-	button.BackgroundColor3 = CARD
+	button.Size = UDim2.new(1, -10, 0, 45)
+	button.BackgroundColor3 = Color3.fromRGB(25, 27, 30)
+	button.BackgroundTransparency = 0.12
 	button.BorderSizePixel = 0
 	button.Text = ""
 	button.AutoButtonColor = false
-	button.ClipsDescendants = true
 	button.Parent = parent
 
-	round(button, 12)
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0, 10)
+	corner.Parent = button
 
-	local buttonStroke = stroke(
-		button,
-		Color3.fromRGB(59, 62, 70),
-		.5
-	)
+	local buttonStroke = Instance.new("UIStroke")
+	buttonStroke.Color = Color3.fromRGB(66, 69, 76)
+	buttonStroke.Thickness = 1
+	buttonStroke.Transparency = 0.4
+	buttonStroke.Parent = button
 
+	-- Subtle vertical glass gradient
+	local gradient = Instance.new("UIGradient")
+	gradient.Rotation = 90
+	gradient.Color = ColorSequence.new({
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(46, 48, 53)),
+		ColorSequenceKeypoint.new(0.5, Color3.fromRGB(27, 29, 32)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(20, 22, 24))
+	})
+
+	gradient.Transparency = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.4),
+		NumberSequenceKeypoint.new(0.5, 0.72),
+		NumberSequenceKeypoint.new(1, 0.25)
+	})
+
+	gradient.Parent = button
+
+	-- Button text
 	local label = Instance.new("TextLabel")
-	label.Position = UDim2.fromOffset(15, 0)
 	label.Size = UDim2.new(1, -65, 1, 0)
+	label.Position = UDim2.fromOffset(17, 0)
 	label.BackgroundTransparency = 1
 	label.Text = text
-	label.TextColor3 = WHITE
-	label.TextSize = 11
+	label.TextColor3 = Color3.fromRGB(215, 217, 222)
+	label.TextSize = 12
 	label.Font = Enum.Font.GothamMedium
 	label.TextXAlignment = Enum.TextXAlignment.Left
 	label.Parent = button
 
-	-- Right-side Nocturnal "N"
+	-- Nocturnal N
 	local n = Instance.new("TextLabel")
-	n.AnchorPoint = Vector2.new(1, .5)
-	n.Position = UDim2.new(1, -14, .5, 0)
-	n.Size = UDim2.fromOffset(25, 25)
+	n.AnchorPoint = Vector2.new(1, 0.5)
+	n.Position = UDim2.new(1, -16, 0.5, 0)
+	n.Size = UDim2.fromOffset(24, 24)
 	n.BackgroundTransparency = 1
 	n.Text = "N"
-	n.TextColor3 = Color3.fromRGB(105, 109, 120)
-	n.TextSize = 16
-	n.Font = Enum.Font.GothamBlack
-	n.Rotation = 0
+	n.TextColor3 = Color3.fromRGB(105, 108, 115)
+	n.TextSize = 13
+	n.FontFace = Font.new(
+		"rbxasset://fonts/families/GothamSSm.json",
+		Enum.FontWeight.Bold,
+		Enum.FontStyle.Normal
+	)
 	n.Parent = button
 
-	-- Small accent behind the N
-	local accent = Instance.new("Frame")
-	accent.AnchorPoint = Vector2.new(1, .5)
-	accent.Position = UDim2.new(1, -17, .5, 0)
-	accent.Size = UDim2.fromOffset(30, 30)
-	accent.BackgroundColor3 = Color3.fromRGB(75, 210, 115)
-	accent.BackgroundTransparency = .92
-	accent.BorderSizePixel = 0
-	accent.ZIndex = 0
-	accent.Parent = button
-
-	round(accent, 15)
-
-	n.ZIndex = 2
-	label.ZIndex = 2
-
-	-- Slow continuous rotation
+	-- Slow N rotation
 	task.spawn(function()
-		while n.Parent do
-			tween(
+		while button.Parent do
+			local rotationTween = tween(
 				n,
-				1.8,
-				{Rotation = n.Rotation + 180},
-				Enum.EasingStyle.Linear,
-				Enum.EasingDirection.InOut
-			):Play()
+				5,
+				{
+					Rotation = n.Rotation + 360
+				},
+				Enum.EasingStyle.Linear
+			)
 
-			task.wait(1.8)
+			rotationTween:Play()
+			rotationTween.Completed:Wait()
 		end
 	end)
 
+	-- Hover
 	button.MouseEnter:Connect(function()
-		tween(button, .18, {
-			BackgroundColor3 = Color3.fromRGB(29, 32, 38)
+		tween(button, 0.18, {
+			BackgroundTransparency = 0.02
 		}):Play()
 
-		tween(buttonStroke, .18, {
-			Color = Color3.fromRGB(75, 210, 115),
-			Transparency = .25
+		tween(buttonStroke, 0.18, {
+			Color = Color3.fromRGB(125, 128, 136),
+			Transparency = 0.12
 		}):Play()
 
-		tween(n, .18, {
-			TextColor3 = GREEN
+		tween(label, 0.18, {
+			TextColor3 = Color3.fromRGB(248, 249, 251)
 		}):Play()
 
-		tween(accent, .18, {
-			BackgroundTransparency = .84
+		tween(n, 0.18, {
+			TextColor3 = Color3.fromRGB(190, 193, 200)
 		}):Play()
 	end)
 
 	button.MouseLeave:Connect(function()
-		tween(button, .18, {
-			BackgroundColor3 = CARD
+		tween(button, 0.18, {
+			BackgroundTransparency = 0.12
 		}):Play()
 
-		tween(buttonStroke, .18, {
-			Color = Color3.fromRGB(59, 62, 70),
-			Transparency = .5
+		tween(buttonStroke, 0.18, {
+			Color = Color3.fromRGB(66, 69, 76),
+			Transparency = 0.4
 		}):Play()
 
-		tween(n, .18, {
-			TextColor3 = Color3.fromRGB(105, 109, 120)
+		tween(label, 0.18, {
+			TextColor3 = Color3.fromRGB(215, 217, 222)
 		}):Play()
 
-		tween(accent, .18, {
-			BackgroundTransparency = .92
+		tween(n, 0.18, {
+			TextColor3 = Color3.fromRGB(105, 108, 115)
 		}):Play()
 	end)
 
 	button.MouseButton1Click:Connect(function()
-		tween(button, .08, {
-			Size = UDim2.new(1, -14, 0, 46)
-		}):Play()
-
-		task.delay(.08, function()
-			if button.Parent then
-				tween(button, .12, {
-					Size = UDim2.new(1, -10, 0, 48)
-				}):Play()
-			end
-		end)
-
 		if callback then
 			callback()
 		end
